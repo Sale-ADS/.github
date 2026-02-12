@@ -1,8 +1,19 @@
 name: Auto-add to Product Board
 
+# Reusable workflow - repos call this to auto-add issues to the Product Board.
+# Usage in each repo's .github/workflows/auto-add-to-project.yml:
+#
+#   name: Auto-add to Product Board
+#   on:
+#     issues:
+#       types: [opened]
+#   jobs:
+#     add:
+#       uses: Sale-ADS/.github/.github/workflows/auto-add-to-project.yml@main
+#       secrets: inherit
+#
 on:
-  issues:
-    types: [opened]
+  workflow_call:
 
 jobs:
   add-to-project:
