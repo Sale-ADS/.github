@@ -22,6 +22,11 @@ on:
         required: false
         type: string
         default: '20'
+      package-manager:
+        description: 'Node package manager: npm | pnpm | yarn (only for language=node)'
+        required: false
+        type: string
+        default: 'npm'
       snyk-org:
         description: 'Snyk organization ID'
         required: false
@@ -102,16 +107,25 @@ jobs:
         if: ${{ inputs.language == 'java' }}
         run: ./mvnw install -DskipTests -q
 
+      - name: Setup pnpm
+        if: ${{ inputs.language == 'node' && inputs.package-manager == 'pnpm' }}
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         if: ${{ inputs.language == 'node' }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          cache: npm
+          cache: ${{ inputs.package-manager }}
 
       - name: Install Node.js dependencies
         if: ${{ inputs.language == 'node' }}
-        run: npm ci
+        run: |
+          case "${{ inputs.package-manager }}" in
+            pnpm) pnpm install --frozen-lockfile ;;
+            yarn) yarn install --frozen-lockfile ;;
+            *)    npm ci ;;
+          esac
 
       - name: Run Snyk Open Source scan
         uses: snyk/actions/node@master
@@ -188,16 +202,25 @@ jobs:
         if: ${{ inputs.language == 'java' }}
         run: ./mvnw package -DskipTests -q
 
+      - name: Setup pnpm
+        if: ${{ inputs.language == 'node' && inputs.package-manager == 'pnpm' }}
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         if: ${{ inputs.language == 'node' }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
-          cache: npm
+          cache: ${{ inputs.package-manager }}
 
       - name: Install Node.js dependencies
         if: ${{ inputs.language == 'node' }}
-        run: npm ci
+        run: |
+          case "${{ inputs.package-manager }}" in
+            pnpm) pnpm install --frozen-lockfile ;;
+            yarn) yarn install --frozen-lockfile ;;
+            *)    npm ci ;;
+          esac
 
       - name: Build Docker image for scanning
         run: |
